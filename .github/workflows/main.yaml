@@ -4,7 +4,7 @@ name: "Build Containers"
 'on':
   workflow_dispatch:
   push:
-    branches: ["main"]
+    tags: ["*"]
 
 jobs:
   matrix:
