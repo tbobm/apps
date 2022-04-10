@@ -10,7 +10,7 @@ A centralized collection of containers to use as example apps.
 
 #### Hello World
 
-Path: [`./api/http/hello/`](./api/http/hello/README.md)
+Path: [`./api/http/hello/`](./api/http/hello/)
 
 Example usage:
 ```console
@@ -23,7 +23,7 @@ OK
 
 ### Producer
 
-Path: [`./sqs/producer/README.md`](./sqs/producer/README.md)
+Path: [`./sqs/producer/`](./sqs/producer/)
 
 Example usage:
 ```console
