@@ -4,9 +4,31 @@ name: "Build Containers"
 'on':
   workflow_dispatch:
   push:
+    branches: ["main"]
     tags: ["*"]
 
 jobs:
+  release:
+    name: 'Create a release'
+    runs-on: ubuntu-20.04
+    outputs:
+      release_version: steps.semantic-release.outputs.new_release_version
+      new_release: steps.semantic-release.outputs.new_release_published
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Semantic Release
+        id: semantic-release
+        uses: cycjimmy/semantic-release-action@v2
+        with:
+          branches: |
+            [
+              'main'
+            ]
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   matrix:
     runs-on: "ubuntu-latest"
     name: "Generate the matrix"
@@ -48,6 +70,7 @@ jobs:
     name: "Build and push OCIs"
     needs:
       - matrix
+      - release
     strategy:
       matrix: ${{fromJson(needs.matrix.outputs.matrix)}}
     steps:
@@ -81,4 +104,4 @@ jobs:
           push: true
           tags: |
             "ghcr.io/${{ env.GITHUB_REPOSITORY }}:${{ steps.slugify-src.outputs.target-slug }}-latest"
-            "ghcr.io/${{ env.GITHUB_REPOSITORY }}:${{ steps.slugify-src.outputs.target-slug }}-${{ env.GITHUB_REF_SLUG }}"
+            "ghcr.io/${{ env.GITHUB_REPOSITORY }}:${{ steps.slugify-src.outputs.target-slug }}-${{ needs.release.outputs.new_release == 'true' && needs.release.outputs.release_version || env.GITHUB_REF_SLUG }}"
