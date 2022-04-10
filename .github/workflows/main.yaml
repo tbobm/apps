@@ -1,0 +1,84 @@
+---
+name: "Build Containers"
+
+'on':
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  matrix:
+    runs-on: "ubuntu-latest"
+    name: "Generate the matrix"
+    outputs:
+      matrix: ${{ steps.create-matrix.outputs.matrix }}
+    steps:
+      - name: "Checkout the code"
+        uses: "actions/checkout@v3"
+
+      - name: "Run generate_matrix.sh"
+        id: create-matrix
+        run: |
+          yq --version
+          matrix=$(./generate_matrix.sh | yq -I=0 -o=json)
+          echo matrix="$matrix"
+          echo "::set-output name=matrix::$(./generate_matrix.sh | yq -I=0 -o=json)"
+      - name: "Display matrix"
+        run: echo '${{ steps.create-matrix.outputs.matrix }}'
+
+  check-matrix:
+    runs-on: ubuntu-latest
+    name: "Validate and display matrix"
+    needs: matrix
+    steps:
+      - name: Install json2yaml
+        run: |
+          sudo npm install -g json2yaml
+
+      - name: Check matrix definition
+        run: |
+          matrix='${{ needs.matrix.outputs.matrix }}'
+          echo $matrix
+          echo $matrix | jq .
+          echo $matrix | json2yaml
+
+
+  build-containers:
+    runs-on: "ubuntu-latest"
+    name: "Build and push OCIs"
+    needs:
+      - matrix
+    strategy:
+      matrix: ${{fromJson(needs.matrix.outputs.matrix)}}
+    steps:
+      - name: "Checkout the code"
+        uses: "actions/checkout@v3"
+
+      - name: "GitHub Slug Action"
+        uses: rlespinasse/github-slug-action@4.2.3
+
+      - name: "Set up Docker Buildx"
+        uses: docker/setup-buildx-action@v1
+
+      - name: "Login to GitHub Container Registry"
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Slugify path to create container tag"
+        id: slugify-src
+        env:
+          TARGET_SRC: ${{ matrix.target.src }}
+        run: |
+          echo "::set-output name=target-slug::$(echo $TARGET_SRC | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)"
+
+      - name: "Build container ${{ matrix.target.name }}"
+        uses: docker/build-push-action@v2
+        with:
+          context: "${{ matrix.target.src }}"
+          push: true
+          tags: |
+            "ghcr.io/${{ env.GITHUB_REPOSITORY }}:${{ steps.slugify-src.outputs.target-slug }}-latest"
+            "ghcr.io/${{ env.GITHUB_REPOSITORY }}:${{ steps.slugify-src.outputs.target-slug }}-${{ env.GITHUB_REF_SLUG }}"
