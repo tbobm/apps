@@ -102,6 +102,8 @@ jobs:
         with:
           context: "${{ matrix.target.src }}"
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             "ghcr.io/${{ env.GITHUB_REPOSITORY }}:${{ steps.slugify-src.outputs.target-slug }}-latest"
             "ghcr.io/${{ env.GITHUB_REPOSITORY }}:${{ steps.slugify-src.outputs.target-slug }}-${{ needs.release.outputs.new_release == 'true' && needs.release.outputs.release_version || env.GITHUB_REF_SLUG }}"
