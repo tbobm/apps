@@ -5,6 +5,7 @@ import boto3
 
 # https://sqs.<aws_region>.amazonaws.com/111111111111/my-queue
 QUEUE_URL = os.environ.get('SQS_QUEUE_URL')
+SLEEP_DURATION_SECONDS = int(os.environ.get('SLEEP_DURATION_SECONDS', "15"))
 
 def main():
     # Create SQS client
@@ -13,7 +14,7 @@ def main():
     while True:
         send_message(sqs)
         print("sent a message, going to sleep")
-        sleep(15)
+        sleep(SLEEP_DURATION_SECONDS)
 
 def send_message(sqs_client):
     # Send message to SQS queue
