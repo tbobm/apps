@@ -12,7 +12,8 @@ def main():
 
     while True:
         send_message(sqs)
-        sleep(5)
+        print("sent a message, going to sleep")
+        sleep(15)
 
 def send_message(sqs_client):
     # Send message to SQS queue
