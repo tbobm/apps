@@ -10,17 +10,17 @@ name: "Build Containers"
 jobs:
   release:
     name: 'Create a release'
-    runs-on: ubuntu-20.04
+    runs-on: "ubuntu-latest"
     outputs:
       release_version: steps.semantic-release.outputs.new_release_version
       new_release: steps.semantic-release.outputs.new_release_published
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Semantic Release
         id: semantic-release
-        uses: cycjimmy/semantic-release-action@v2
+        uses: cycjimmy/semantic-release-action@v4
         with:
           branches: |
             [
@@ -36,7 +36,7 @@ jobs:
       matrix: ${{ steps.create-matrix.outputs.matrix }}
     steps:
       - name: "Checkout the code"
-        uses: "actions/checkout@v3"
+        uses: "actions/checkout@v4"
 
       - name: "Run generate_matrix.sh"
         id: create-matrix
@@ -44,7 +44,7 @@ jobs:
           yq --version
           matrix=$(./generate_matrix.sh | yq -I=0 -o=json)
           echo matrix="$matrix"
-          echo "::set-output name=matrix::$(./generate_matrix.sh | yq -I=0 -o=json)"
+          echo "matrix=$(./generate_matrix.sh | yq -I=0 -o=json)" >> "$GITHUB_OUTPUT"
       - name: "Display matrix"
         run: echo '${{ steps.create-matrix.outputs.matrix }}'
 
@@ -75,33 +75,35 @@ jobs:
       matrix: ${{fromJson(needs.matrix.outputs.matrix)}}
     steps:
       - name: "Checkout the code"
-        uses: "actions/checkout@v3"
+        uses: "actions/checkout@v4"
 
       - name: "GitHub Slug Action"
         uses: rlespinasse/github-slug-action@4.2.3
 
       - name: "Set up Docker Buildx"
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
       - name: "Login to GitHub Container Registry"
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          mask-password: 'true'
 
       - name: "Slugify path to create container tag"
         id: slugify-src
         env:
           TARGET_SRC: ${{ matrix.target.src }}
         run: |
-          echo "::set-output name=target-slug::$(echo $TARGET_SRC | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)"
+          echo "target-slug=$(echo $TARGET_SRC | iconv -t ascii//TRANSLIT | sed -r s/[^a-zA-Z0-9]+/-/g | sed -r s/^-+\|-+$//g | tr A-Z a-z)" >> "$GITHUB_OUTPUT"
 
       - name: "Build container ${{ matrix.target.name }}"
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v5
         with:
           context: "${{ matrix.target.src }}"
           push: true
+          provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: |
