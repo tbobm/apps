@@ -78,7 +78,7 @@ jobs:
         uses: "actions/checkout@v4"
 
       - name: "GitHub Slug Action"
-        uses: rlespinasse/github-slug-action@4.2.3
+        uses: rlespinasse/github-slug-action@4.4.1
 
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
