@@ -12,9 +12,14 @@ async def read_root(request: Request, full_path: str):
         "method": request.method,
     }
     response['headers'] = request.headers
-    _json = await request.json()
-    if _json is not None:
-        response['json'] = _json
+    _json = None
+    try:
+        _json = await request.json()
+        if _json is not None:
+            response['json'] = _json
+    except Exception:
+        # no json payload
+        pass
     _form = await request.form()
     if _form is not None:
         response['form'] = _form
