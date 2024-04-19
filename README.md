@@ -19,6 +19,17 @@ $ curl localhost:8000/health
 OK
 ```
 
+#### http-dump
+
+Path: [`./api/http/dump/`](./api/http/dump/)
+
+Example usage:
+```console
+$ docker run -p 8000:8000 -d --rm ghcr.io/tbobm/apps:api-http-dump-latest
+$ curl localhost:8000/any/path -H "example-header: any-value"
+{"path":"any/path","method":"GET","headers":{"host":"localhost:8000","user-agent":"curl/7.81.0","accept":"*/*","example-header":"any-value"},"form":{}}
+```
+
 ## SQS
 
 ### Producer
