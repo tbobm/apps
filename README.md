@@ -30,6 +30,20 @@ $ curl localhost:8000/any/path -H "example-header: any-value"
 {"path":"any/path","method":"GET","headers":{"host":"localhost:8000","user-agent":"curl/7.81.0","accept":"*/*","example-header":"any-value"},"form":{}}
 ```
 
+## Lambda
+
+### Hello World
+
+Path: [`./lambda/hello/`](./lambda/hello/)
+
+Example usage:
+```console
+$ docker run -p 9000:8080 -d ghcr.io/tbobm/apps:lambda-hello-latest
+$ curl "localhost:9000/2015-03-31/functions/function/invocations" -d '{}'
+"Hello World"
+```
+
+
 ## SQS
 
 ### Producer
@@ -41,3 +55,4 @@ Example usage:
 $ docker run -e SQS_QUEUE_URL="https://sqs.eu-west-1.amazonaws.com/111111111111/my-queue" \
   -it ghcr.io/tbobm/apps:sqs-producer-latest
 ```
+
