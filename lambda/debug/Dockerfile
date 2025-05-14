@@ -20,3 +20,5 @@ RUN mkdir -p /aws-lambda-rie && \
     chmod +x /aws-lambda-rie/aws-lambda-rie
 
 ENTRYPOINT [ "/aws-lambda-rie/aws-lambda-rie","./debug-lambda" ]
+
+FROM production AS release
