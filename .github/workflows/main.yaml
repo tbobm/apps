@@ -73,6 +73,7 @@ jobs:
       - release
     strategy:
       matrix: ${{fromJson(needs.matrix.outputs.matrix)}}
+      fail-fast: false
     steps:
       - name: "Checkout the code"
         uses: "actions/checkout@v4"
