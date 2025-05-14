@@ -1,10 +1,9 @@
 [tool.poetry]
 name = "dump"
 version = "0.1.0"
-description = "Display every request done"
+description = "Display every request received"
 authors = ["Theo Bob Massard <tbobm@protonmail.com>"]
 license = "MIT"
-readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
